@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<!--This is well organized. Just start collapsing the tags-->
+<html>
+	<head>
+		<!--meta-->
+        <meta charset="utf-8">
+        <title>RI Visitor Project</title>
+		
+		<!--external stylesheets-->
+		<link rel="prefetch stylesheet" href="{{url_for('static', filename='icon.css')}} " prefetch>
+        <link rel="prefetch stylesheet" href="{{url_for('static', filename='normalize.css')}} " prefetch>
+        <link rel="prefetch stylesheet" href="{{url_for('static', filename='materialize.min.css')}}" prefetch>
+        <script src="{{url_for('static', filename='jquery-3.3.1.min.js')}}" charset="utf-8"></script>
+		
+		<!--external scripts-->
+        <script src="{{url_for('static', filename='materialize.min.js')}}" charset="utf-8"></script>
+        <script type="text/javascript" src="{{url_for('static', filename='js.cookie.min.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='tesseract.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='worker.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='grid.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='version.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='detector.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='formatinf.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='errorlevel.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='bitmat.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='datablock.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='bmparser.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='datamask.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='rsdecoder.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='gf256poly.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='gf256.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='decoder.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='qrcode.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='findpat.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='alignpat.js')}}"></script>
+		<script type="text/javascript" src="{{url_for('static', filename='databr.js')}}"></script>
+		
+		<!--internal stylesheet-->
+		<style>
+			/*classes*/
+			.modal {
+				/*forces modal to be static for some screens*/
+				max-height: 100% !important;
+				overflow: visible !important;
+			}
+			.select-dropdown.dropdown-content li.selected{
+				/*part of selectbox noclick keystroke workaround*/
+				background-color:rgba(0,0,0,0.20);
+			}
+			tr.selected{
+				/*colour of selected table row*/
+				/*also used as indicator for table selected*/
+				background-color:rgba(0,255,0,0.2) !important;
+			}
+			tr.selected:hover{
+				/*colour of selected table row*/
+				background-color:rgba(0,127,127,0.2) !important;
+			}
+			tr.result{
+				/*currently contains nothing, just used as an indicator for search results*/
+			}
+			tr.hidden{
+				/*currently contains nothing, just used as an indicator for invisible rows*/
+			}
+			tr td.findable{
+				/*currently contains nothing, used as indicator for table searching*/
+			}
+			.tr-signed-in:hover{
+				/*colour of hovered signed in table row*/
+				background-color:rgba(0,0,255,0.2)!important;
+			}
+			.tr-signed-out:hover{
+				/*colour of hovered signed out table row*/
+				background-color:rgba(255,0,0,0.2)!important;
+			}
+			/*table column width adjustments*/
+			th.name, td.name{
+				max-width:15%;
+				width:15%;
+			}
+			th.nric, td.nric{
+				max-width:10%;
+				width:10%;
+			}
+			th.tel, td.tel{
+				max-width:10%;
+				width:10%;
+			}
+			th.email, td.email{
+				max-width:15%;
+				width:15%;
+			}
+			th.reason, td.reason{
+				max-width:10%;
+				width:10%;
+			}
+			th.elab, td.elab{
+				max-width:15%;
+				width:15%;
+			}
+			th.timein, td.timein{
+				max-width:10%;
+				width:10%;
+			}
+			th.timeout, td.timeout{
+				max-width:10%;
+				width:10%;
+			}
+			th.signout, td.signout{
+				max-width:5%;
+				width:5%;
+			}
+			div.resize{
+				/*part of animated table*/
+				transition: all 1s ease-in-out;
+				display:block;
+				overflow-y:auto;
+				max-height:368;
+			}
+			
+			/*tags*/
+			input:invalid{
+				/*effects on invalid inputs in form screen*/
+				color:red;
+			}
+			select:invalid{
+				/*effects on invalid inputs in form screen*/
+				color:red;
+			}
+			table{
+				/*forces table to be certain size and allow column width adjustments*/
+				width:100%;
+				max-width:100%;
+				max-height:100%;
+				table-layout:fixed;
+			}
+			td{
+				/*makes long things in table better displayed*/
+				text-overflow:ellipsis;
+				overflow-x: hidden;
+			}
+			
+			/*IDs*/
+			#toast-container {
+				/*changes position of toast workaround*/
+				top: auto !important;
+				right: 7%;
+				bottom: 10%;
+				left:auto !important;
+			}
+			#cstream{
+				/*styling of video in modal*/
+				position:static;
+				display:block;
+				margin:0;
+				width:100%;
+				padding: 0 2% 3% 2%;
+			}
+		</style>
+    </head>
+	
+	<body>
+		<!--visible stuff-->
+		<div class="container" style="width:90%;max-width:90%;">
+
+			<!--search bar-->
+			<div class = "row" style="margin-top:2vh;height:5vh;margin-left:">
+				<h3 class="col s0" style="display:inline; margin:0; padding:0;">RI Visitors</h3>
+				<i class="material-icons prefix col s0" style="display:inline;font-size:5vh;margin:0;">search</i>
+				<input type="search" id="search" placeholder="search anything..." onfocus = "this.value='';" class="input-field col s6" style="display:inline;height:100%;margin:0;font-size:2vh">
+				<button class="btn waves-effect waves-light" onfocus="this.blur();" onclick="table_search();">Search</button>
+				<button class="btn waves-effect waves-light" onfocus="this.blur();" onclick="reset_table(true);">Reset</button>
+			</div>
+
+			<!--table-->
+			<table>
+				<thead>
+					<tr>
+						<th>UUID</th>
+						<th class="name">Name</th>
+						<th class="nric">NRIC</th>
+						<th class="tel">Phone number</th>
+						<th class="email">Email</th>
+						<th class="reason">Reason for visit</th>
+						<th class="elab">Elaboration</th>
+						<th class="timein">Time In</th>
+						<th class="timeout">Time Out</th>
+						<th class="signout">Sign out</th>
+					</tr>
+				</thead>
+			</table>
+			<div class="resize">
+				<table class="highlight">
+					<tbody>
+						{% for i in visitors %}
+						<tr class={{"tr-signed-in" if i.signed_in else "tr-signed-out"}}>
+							<td>{{i.uuid}}</td>
+							<td class="findable name">{{i.name}}</td>
+							<td class="findable nric">{{i.nric}}</td>
+							<td class="findable tel">{{i.phone}}</td>
+							<td class="findable email">{{i.email}}</td>
+							<td class="findable reason">{{i.reason}}</td>
+							<td class="findable elab">{{i.elab}}</td>
+							<td class="findable timein">{{i.time_in}}</td>
+							<td class="findable timeout">{{i.time_out}}</td>
+							<td class="signout" id="a-signout">
+							{% if i.signed_in %}
+								<a href="{{url_for('signout', visitor_id=i.uuid)}}" onclick="Materialize.toast('Deleting...',dur_long_msg,'toast');" style="color:black;"><i class="material-icons">clear</i></a>
+							{% else %}
+								<span style="color:red">Signed out</span>
+							{% endif %}
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>	
+			</div>
+
+			<!--spacing-->
+			<br>
+			<br>
+
+			<!--tip for user & toggle sign-out showing-->
+			<div class="right">
+				<input type="checkbox" class="filled-in" id="show-signed-out"/>
+				<label for="show-signed-out">Show signed out visitors</label>
+				<div class="card-panel light-blue lighten-5" style="margin-top:5%";>
+					<p>"." opens visitor add screen</p>
+					<p>"/" opens QR scanner</p>
+					<p>";" opens OCR scanner</p>
+					<p>Up/Down keys navigate</p>
+					<p>Enter opens search bar/ submits form/ signs out row</p>
+					<p>Esc deselects/closes things</p>
+				</div>
+			</div>
+
+			<!--opens form modal-->
+			<button class="btn-floating btn-large waves-effect waves-light modal-trigger" data-target="modal1"><i class="material-icons">add</i></button>
+			
+			<!--form modal-->
+			<div class="modal" id="modal1">
+				<div class="modal-content">
+					<!--title-->
+					<h4>Add a visitor</h4>
+					
+					<!--body-->
+					<div class="row">
+						<!--left side-->
+						<div class="col m6">
+							<!--form body-->
+							<form autocomplete="off" action="/" method="post" onSubmit="Materialize.toast('Submitting...',dur_long_msg,'toast');">
+								<input type="search" name="aname" pattern = '^([^0-9]*)$' placeholder="name" maxlength="80" autocomplete="off" required>
+								<input type="search" name="anric" placeholder="NRIC" maxlength="20" autocomplete="off" required>
+								<input type="search" name="aphone"  pattern='(6|8|9)\d{7}' placeholder="phone number" maxlength="8" autocomplete="off" required>
+								<input type="search" name="aemail" pattern='^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$' placeholder="email" maxlength="256" autocomplete="off">
+								<select name="areason" id="reasons" onfocus="void(0)" placeholder="reason for visit" required>
+									<option value="" disabled selected>Reason for Visit</option>
+									<option value="Event">Attending an event</option>
+									<option value="Meeting">Meeting with staff</option>
+									<option value="Visit">Leisure</option>
+									<option value="Ext">External vendor</option>
+									<option value="Delivery">Item delivery</option>
+									<option value="Other">Others</option>
+								</select>
+								<input type="search" name="areason2" placeholder="elaboration" autocomplete="off" maxlength="300">
+								
+								<!--submit button-->
+								<input type="submit" name="submit" value="submit" class="modal-action waves-effect waves-light btn">
+							</form>
+						</div>
+						
+						<!--right side-->
+						<div class="col m6">
+							<input type="file" id="file_input">
+							<br>
+							<br>
+							<button class="btn waves-effect modal-close waves-light" onclick="readCam('qr');">QR capture</button>
+							<br>
+							<br>
+							<button class="btn waves-effect modal-close waves-light" onclick="readCam('ocr');">IC Capture</button>
+							<br>
+							<br>
+							<button class="btn waves-effect modal-close waves-light" onclick="readCam('ocr');">Picture Capture</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!--camera modal-->
+			<div class="modal" id="modal2">
+				<div class="modal-content">
+					<h4>Capture</h4>
+					<video id="cstream">Sorry, you do not support HTML5 Videos</video>
+				</div>
+			</div>
+
+			<!--Test image for OCR-->
+			<img id="doge" src="{{url_for('static', filename='test.jpeg')}}" style="display:none;"/>
+		</div>
+		
+		<!--internal scripts-->
+		<div>
+			<!--settings-->
+			<script type='text/javascript'>
+				var dur_long_msg = 10000;
+				var dur_short_msg = 2000;
+				var qr_interval = 50;
+				var ocr_interval = 50;
+				var ocr_timeout = 5000;
+				var nric_regex = /[STFGstfg]\d{7}[A-Za-z]/;
+				var name_regex = /Name\s*\n+([A-Z ,-]{6,})\n/;
+				
+				var qr_shortcut = 191; //'/'
+				var ocr_shortcut = 186; //';'
+				var form_shortcut = 190; //'.'
+				var exit_shortcut = 27; //ESC
+				var up_arrow = 38;
+				var dwn_arrow = 40;
+				var submit_shortcut = 13;//ENTER
+				
+				var NUM_ROW_VISIBLE = 9;
+			</script>
+
+			<!--https://github.com/hipersayanX/MultiOtsuThresholdJS-->
+			<script type='text/javascript'>
+				function histogram(image)
+				{
+					// Create the histogram
+					var histogram = new Array(256);
+					histogram.fill(0);
+
+					for (var i = 0; i < image.data.length; i += 4) {
+						var luma = (  11 * image.data[i]
+									+ 16 * image.data[i + 1]
+									+  5 * image.data[i + 2]) >> 5;
+						histogram[luma]++;
+					}
+
+					// Since we use sum tables add one more to avoid unexistent colors.
+					for (var i = 0; i < histogram.length; i++)
+						histogram[i]++;
+
+					return histogram;
+				}
+
+				function buildTables(histogram)
+				{
+					// Create cumulative sum tables.
+					var P = new Array(histogram.length + 1);
+					var S = new Array(histogram.length + 1);
+					P[0] = 0;
+					S[0] = 0;
+
+					var sumP = 0;
+					var sumS = 0;
+
+					for (var i = 0; i < histogram.length; i++) {
+						sumP += histogram[i];
+						sumS += i * histogram[i];
+						P[i + 1] = sumP;
+						S[i + 1] = sumS;
+					}
+
+					// Calculate the between-class variance for the interval u-v
+					var H = new Array(histogram.length * histogram.length);
+					H.fill(0.);
+
+					for (var u = 0; u < histogram.length; u++)
+						for (var v = u + 1; v < histogram.length; v++)
+							H[v + u * histogram.length] = Math.pow(S[v] - S[u], 2) / (P[v] - P[u]);
+
+					return H;
+				}
+
+				var maxSum = 0.;
+				var thresholds = [];
+
+				function for_loop(H, u, vmax, level, levels, index)
+				{
+					var classes = index.length - 1;
+
+					for (var i = u; i < vmax; i++) {
+						index[level] = i;
+
+						if (level + 1 >= classes) {
+							// Reached the end of the for loop.
+
+							// Calculate the quadratic sum of al intervals.
+							var sum = 0.;
+
+							for (var c = 0; c < classes; c++) {
+								var u = index[c];
+								var v = index[c + 1];
+								var s = H[v + u * levels];
+								sum += s;
+							}
+
+							if (maxSum < sum) {
+								// Return calculated threshold.
+								thresholds = index.slice(1, index.length - 1);
+								maxSum = sum;
+							}
+						} else
+							// Start a new for loop level, one position after current one.
+							for_loop(H,
+									i + 1,
+									vmax + 1,
+									level + 1,
+									levels,
+									index);
+					}
+				}
+
+				function otsu(histogram, classes)
+				{
+					maxSum = 0.;
+					thresholds = new Array(classes - 1);
+					thresholds.fill(0);
+					var H = buildTables(histogram);
+					var index = new Array(classes + 1);
+					index[0] = 0;
+					index[index.length - 1] = histogram.length - 1;
+
+					for_loop(H,
+							1,
+							histogram.length - classes + 1,
+							1,
+							histogram.length,
+							index);
+
+					return thresholds;
+				}
+
+				function drawResult(dstData, thresholds, classes)
+				{
+
+					var colors = new Array(classes);
+
+					for (var i = 0; i < classes; i++)
+						colors[i] = Math.round(255 * i / (classes - 1));
+
+					var colorTable = new Array(256);
+					var j = 0;
+
+					for (var i = 0; i < colorTable.length; i++) {
+						if (j < thresholds.length && i >= thresholds[j])
+							j++;
+
+						colorTable[i] = colors[j];
+					}
+
+					for (var i = 0; i < dstData.length; i += 4) {
+						var luma = (  11 * dstData[i]
+									+ 16 * dstData[i + 1]
+									+  5 * dstData[i + 2]) >> 5;
+						luma = colorTable[luma];
+
+						dstData[i]     = luma;
+						dstData[i + 1] = luma;
+						dstData[i + 2] = luma;
+						dstData[i + 3] = 255;
+					}
+
+					return dstData;
+				}
+			</script>
+
+			<!--cam functionality-->
+			<script type="text/javascript">
+				//stores active camera processing thread
+				var capture_thread_for_webcam;
+				//used for all picture taking
+				var picture_taking_canvas = document.createElement('canvas');
+				
+				//first function; function that button calls to do work, opens cam modal necessarily and returns to form modal on success
+				function readCam(target){
+					//incompatibility check
+					if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){
+						Materialize.toast("Browser doesn't have webcam/Doesn't support getUserMedia",dur_long_msg,'toast');
+						return false;
+					}
+					
+					//stream constraints
+					var constraints = {
+						video: true
+					};
+					
+					//handlers for video stream
+					function onSuccess(stream){
+						video.srcObject = stream;
+						return stream;
+					}
+					function handleError(error){
+						console.error(error);
+						Materialize.toast("Error occured while trying to read webcam",dur_long_msg,'toast');
+					}
+					
+					var video = $("#cstream")[0];
+					if (video.srcObject == undefined||video.srcObject == null||video.srcObject==""){
+						var stream = navigator.mediaDevices.getUserMedia(constraints).then(onSuccess).catch(handleError);
+					}
+					
+					//calling method based on target; setting active processing thread
+					if (target=='qr'){
+						//video.style = "filter:contrast(200%);";
+						capture_thread_for_webcam = setInterval(function(){ capQRCode() }, qr_interval); //time in ms between each call
+						
+					}else if(target=="ocr"){
+						//video.style = "filter:brightness(200%);";
+						//Create new tesseract worker each time
+						window.Tesseract = Tesseract.create({
+							workerPath: "{{url_for('static',_external='True', filename='worker.js')}}",
+							langPath: "{{url_for('static',_external='True', filename='3.02/')}}",
+							corePath: "{{url_for('static',_external='True', filename='index.js')}}",
+						});
+						
+						capture_thread_for_webcam = setInterval(function(){ capOCR() },ocr_interval); //time in ms between each call
+					}
+					
+					//open modal
+					video.play();
+					Materialize.toast('Use Screen to center on target',dur_long_msg,'toast');
+					$('#modal2').modal('open');
+					return true;
+				}
+				
+				function capQRCode(){
+					qrcode.callback = setQR;
+					qrcode.decode(take_snapshot());
+				}
+				
+				function setQR(data){
+					//when QR code read wrong
+					try{
+						var json_object = JSON.parse(data);
+					}catch(e){
+						return false;
+					}
+					
+					//sets form values based on QR code
+					$('[name=aname]').val(json_object.name);
+					$('[name=anric]').val(json_object.nric);
+					$('[name=aphone]').val(json_object.telno);
+					$('[name=aemail]').val(json_object.email);
+					$('[name=areason]').val(json_object.reason_selector);
+					$('select').material_select();
+					$('[name=areason2]').val(json_object.reason);
+					success_capture();
+					return true;
+				}
+				
+				//Deprecated. Read QR code for direct file input mode (hey I can remove this right?)
+				function readQRCode() {
+					if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+						alert('The File APIs are not fully supported in this browser.');
+						return;
+					}
+					input = $("#file_input");
+					if (!input) {
+					  alert("Couldn't find the file_input element.");
+					}
+					else if (!input[0].files) {
+					  alert("This browser doesn't seem to support the 'files' property of file inputs.");
+					}
+					else if (!input[0].files[0]) {
+					  alert("Please select a file before clicking 'Load'");
+					}
+					else {
+					  fr = new FileReader();
+					  fr.onload = function(e) {
+						  qrcode.callback = setQR;
+						  qrcode.decode(e.target.result);
+					  }
+					  fr.readAsDataURL(input[0].files[0]);
+					}
+				}
+				
+				//does OCR on camera feed
+				var is_identifying = false; //debouncing to prevent excessive lag
+				var try_no = 0;
+				function capOCR(){
+					if (is_identifying){
+						//console.log("stuck");
+						return;
+						
+					}else{
+						//debouncing related
+						is_identifying = true;
+						
+						//Auto restarting
+						try_no+=1;
+						setTimeout(function(){
+							//keeping cur_try from being modified by main thread by putting it async
+							var cur_try = try_no;
+							setTimeout(function(){
+								if(try_no==cur_try){//if still on same attempt
+									clearInterval(capture_thread_for_webcam);
+									is_identifying = false;
+									Tesseract.worker.terminate();
+									Tesseract.terminate();
+									window.Tesseract = Tesseract.create({
+										workerPath: "{{url_for('static',_external='True', filename='worker.js')}}",
+										langPath: "{{url_for('static',_external='True', filename='3.02/')}}",
+										corePath: "{{url_for('static',_external='True', filename='index.js')}}",
+									});
+									capture_thread_for_webcam = setInterval(function(){ capOCR() },ocr_interval); //time in ms between each call
+								}
+							},ocr_timeout);//1.5 second before restart				
+						},0);
+						
+						//a lot of options meant to optimize OCR specifically for IC
+						var rec_process = Tesseract.recognize(take_processed_snapshot(),{
+							load_system_dawg:false, //prevent identification based on common words
+							chop_enable:true, //useful for block letters
+							use_new_state_cost:false, //useful for block letters
+							segment_segcost_rating:false, //useful for block letters
+							enable_new_segsearch:0, //useful for block letters
+							language_model_ngram_on:0, //useful for block letters
+							textord_force_make_prop_words:false, //useful for names
+							tessedit_char_whitelist:"ABCDEeFGHIJKLMmNaOPQRSTUVWXYZ0123456789,- " //limits identifiable characters to speed up time
+						});
+						
+						//on success
+						rec_process.then(function(result){
+							is_identifying = false;
+							if (result == undefined) return;
+							var text = result['text'];
+							console.log(text);
+							
+							//if things were actually scanned
+							if(text!=null&&text!=undefined&&text!=""){
+								
+								//apply regex to find data within the mess
+								var nric = text.match(nric_regex);
+								var name = text.match(name_regex);
+								console.log("NRIC is: ",nric);
+								console.log("Name is: ",name);
+								
+								//if all data is present
+								if (nric!=null&&name!=null){
+									$('[name=anric]').val(nric[0]);
+									$('[name=aname]').val(name[1]);
+									success_capture();
+								}
+							}
+						});
+						
+						//on error
+						rec_process.catch(function(result){
+							console.error('Error is: ', result);
+							is_identifying = false;
+						});
+						
+						//debouncing related
+						rec_process.finally(function(result){
+							is_identifying = false;
+							console.log('Done!');
+						});
+					}
+				}
+				
+				//takes picture of camera
+				function take_snapshot(){
+					var video = $("#cstream")[0];
+					if (video == null || video.videoWidth <= 0){
+						return "";
+					}
+					picture_taking_canvas.width = video.videoWidth;
+					picture_taking_canvas.height = video.videoHeight;
+					var context = picture_taking_canvas.getContext('2d');
+					context.drawImage(video,0,0);
+					return picture_taking_canvas.toDataURL('image/png');
+				}
+				
+				//takes picture of camera and runs it through image processing
+				var threshold = 128; //threshold for binary threshold image processing
+				function take_processed_snapshot(){
+					var video = $("#cstream")[0];
+					if (video == null || video.videoWidth <= 0){
+						return "";
+					}
+					picture_taking_canvas.width = video.videoWidth;
+					picture_taking_canvas.height = video.videoHeight;
+					var context = picture_taking_canvas.getContext('2d');
+					context.drawImage(video,0,0);
+					
+					var rawDataImg = context.getImageData(0,0,picture_taking_canvas.width,picture_taking_canvas.height);
+					var newDataImg = context.createImageData(picture_taking_canvas.width,picture_taking_canvas.height);
+					var rawData = rawDataImg.data;
+					var newData = newDataImg.data;
+					
+					//Use otsu thresholding
+					if (true){
+						return drawResult(rawDataImg,otsu(histogram(rawDataImg),2),2);
+					}
+					
+					//Binary thresholding (currently unreachable code)
+					for(var i = 0; i < rawData.length; i += 4) {
+						var luma = rawData[i] * 0.2126 + rawData[i+1] * 0.7152 + rawData[i+2] * 0.0722;
+						if (luma < 128){luma=0;}
+						if (luma >= 128){luma=255;}
+						newData[i] = luma;
+						newData[i+1] = luma;
+						newData[i+2] = luma;
+						newData[i+3] = rawData[i+3];
+					}
+					newDataImg.data.set(newData);
+					context.putImageData(newDataImg, 0, 0);
+					return picture_taking_canvas.toDataURL('image/png');
+				}
+				
+				//if you noticed, it is called whenever the camera functions are successful to return to form modal
+				function success_capture(){
+					$('#modal2').modal('close');
+					$('#modal1').modal('open');
+					Materialize.toast('Successful!',dur_short_msg,'toast');
+				}
+			</script>
+
+			<!--table functionality-->
+			<script type="text/javascript">
+				var table_index = -1; //current selected index (relative index based on visible rows)
+				var table = $("div.resize"); //table is always sorted signed in first, signed out last
+				
+				//refreshes the highlight and selected table index (after table index modified by external environment, see keystroke functionality
+				function refresh_highlight(){
+					var rows = $('table .tr-signed-in:not(.hidden)');
+					if (rows.length==0){table_index=0;return;} //when no dara
+					$("tr.selected").removeClass("selected");
+					if(table_index >= rows.length){table_index=0;}
+					if(table_index < 0){table_index=rows.length-1;}
+					rows.eq(table_index).addClass("selected");
+					$('window').animate({scrollTop:$('tr.selected').offset().top},250);
+				}
+				
+				//removes all forms of selection (and scrolls to top)
+				function reset_highlight(){
+					table_index = -1;
+					$("tr.selected").removeClass("selected");
+					$('window').animate({scrollTop:$('th').offset().top},250);
+				}
+				
+				//searches table and then modifies CSS to show result (currently returns all rows that have a match in any ".findable" cells
+				function table_search(term=null){
+					if (term==null){
+						term = $('#search')[0].value;
+						Cookies.set('search-request', term);
+					}
+					//finds rows
+					var query = ".findable:contains("+term+")";
+					var rows = $(query).parent();
+					
+					if (rows.length == 0){
+						Materialize.toast('None found',dur_short_msg,'toast');
+					}else{
+						//makes all other rows invisible
+						$('tbody tr').addClass("hidden");
+						$('tbody tr').removeClass("result");
+						rows.removeClass("hidden");
+						rows.addClass("result");
+						
+						var show_signed_out = (Cookies.get('show-signed-out') == 'true');
+						if (!show_signed_out){
+							$('tbody tr.tr-signed-out').addClass("hidden");
+						}
+						
+						if (term == ""){
+							reset_table();
+						}else{
+							Materialize.toast(rows.length +' found',dur_short_msg,'toast');
+							reset_highlight();
+							table_resize(true);
+						}
+					}
+				}
+					
+				//JQuery workaround to make searches case insensitive
+				jQuery.expr[':'].contains = function(a, i, m) {
+					return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+				};
+				
+				//resets table to original form then calls table_resize for good measure
+				function reset_table(isSmooth = true){
+					$("tbody tr").removeClass("hidden");
+					$("tbody tr").removeClass("result");
+					$("#search")[0].value = "";
+					var show_signed_out = (Cookies.get('show-signed-out') == 'true');
+					if (!show_signed_out){
+						$("tbody tr.tr-signed-out").addClass("hidden");
+					}
+					table_resize(isSmooth);
+				}
+				
+				//clicked row now relative to visible rows
+				function on_row_click(){
+					var new_table_index = $("tbody tr:not('.hidden')").index(this)-$("tbody tr.tr-signed-out:not('.hidden')").length;
+					if (new_table_index == table_index){
+						reset_highlight();
+					}else{
+						table_index = new_table_index;
+						refresh_highlight();
+					}
+				}
+				
+				//resizes table
+				function table_resize(isSmooth = true){
+					$("tbody tr:not('.hidden')").fadeIn(200);
+					$("tbody tr.hidden").fadeOut(200);
+					Cookies.set('search-request', '');
+					table[0].style.maxHeight = getCloseHeight();
+				}
+				
+				//Returns correct height of visible table
+				function getCloseHeight(){
+					var outerHeight = $('table.highlight tr.tr-signed-in:not(".hidden")').outerHeight(true)*NUM_ROW_VISIBLE;
+					
+					//$('table.highlight tr:not(".hidden")').each(function(){
+					//	outerHeight += $(this).outerHeight(true);
+					//});
+					return outerHeight+"px";
+				}
+			</script>
+
+			<!--keystroke functionality-->
+			<script type="text/javascript">
+				//flags for whether modals are open to toggle key functionality, modified by handler (no other convinient way to do so)
+				var is_modal2_open = false;
+				var is_modal1_open = false;
+				function onKeystroke(key){
+					if(key.repeat){return;} //key repeats are not allowed
+					
+					if(key.keyCode==qr_shortcut){
+						if (document.activeElement.nodeName == "INPUT"){return;} //these functionalities are blocked if inputting into a textfield or smth
+						if(is_modal2_open){
+							$('#modal2').modal('close');
+						}else{
+							$('#modal1').modal('close');
+							readCam('qr');
+						}
+						return;
+					}
+					if(key.keyCode==ocr_shortcut){
+						if (document.activeElement.nodeName == "INPUT"){return;} //these functionalities are blocked if inputting into a textfield or smth
+						if(is_modal2_open){
+							$('#modal2').modal('close');
+						}else{
+							$('#modal1').modal('close');
+							readCam('ocr');
+						}
+						return;
+					}
+					if(key.keyCode==form_shortcut){
+						if (document.activeElement.nodeName == "INPUT"){return;} //these functionalities are blocked if inputting into a textfield or smth
+						if(is_modal1_open){
+							$('#modal1').modal('close');
+						}else{
+							$('#modal1').modal('open');
+							$('#modal2').modal('close');
+						}
+						return;
+						
+					}
+					if (key.keyCode==exit_shortcut){
+						reset_highlight();
+						$('#modal1').modal('close');
+						$('#modal2').modal('close');
+						return;
+					}
+					
+					//if none of the modals are open, table functionality comes into play
+					if (!(is_modal2_open || is_modal1_open)){
+						if(key.keyCode==up_arrow){ //this is UP arrow
+							table_index = table_index - 1;
+							refresh_highlight();
+							return;
+						}
+						if(key.keyCode==dwn_arrow){ //this is DOWN arrow
+							table_index = table_index + 1;
+							refresh_highlight();
+							return;
+						}
+						if(key.keyCode==submit_shortcut){ //this is ENTER
+							//if already in search bar, ENTER activates search function
+							if (document.activeElement==$('#search')[0]){
+								$('#search')[0].blur();		
+								table_search();
+								
+							//if not focused on search bar
+							}else{
+								var rows = $('table .tr-signed-in');
+								var selected_row = rows.eq(table_index);
+								
+								//If table row is selected, signs out that row, else focuses search bar
+								if(selected_row.hasClass("selected")){ //why like this? double checked that row actually has selected class and that table_index is valid
+									selected_row.find('a')[0].click(); //Workaround, uses template generated link in table row itself to sign out
+								}else{
+									$('#search')[0].focus();
+								}
+							}
+							return;
+						}
+						
+					}else if(is_modal1_open && (key.keyCode==up_arrow||key.keyCode==dwn_arrow||key.keyCode==submit_shortcut)){ //if form modal is open and one of them form navigation keystrokes is being used
+						//this part is messy because it is literally built out of workarounds
+						var form = $('form:first');
+						var select_box = $("[name=areason]");
+						var dropbox = select_box.prevAll('input.select-dropdown');
+						var list = select_box.prevAll('ul.select-dropdown');
+						var cur = list.children("li.selected");
+						if(dropbox.hasClass('active')){return;}
+						var next = form.children().index(document.activeElement);
+						if(key.keyCode==submit_shortcut){
+							if(document.activeElement==document.body){
+								$('form input[type="submit"]').click();
+							}
+						}
+						if(key.keyCode==up_arrow){
+							if(document.activeElement==dropbox[0]){
+								next = next - 1;
+							}
+							document.activeElement.blur();
+							next = next-1;
+							if(next==-1){
+								next=-2;
+							}
+							if (form.children().eq(next)[0]==select_box.parent('div.select-wrapper')[0]){
+								dropbox.click();
+								dropbox.focus();
+								dropbox.on('close.focus',function(){
+									form.children().eq(next-1).focus();
+									$(this).off('close.focus');
+								});
+								if(cur.length == 0){
+									list.children().first().addClass("active selected");
+								}else{
+									cur.addClass("active selected");
+								}
+							}
+							form.children().eq(next).focus();
+							return;
+						}
+						if(key.keyCode==dwn_arrow){
+							if(document.activeElement==dropbox[0]){
+								next = next+1;
+							}
+							document.activeElement.blur();
+							next = next+1;
+							if (next>=form.children().length-1){
+								form.children().first().focus();
+								return;
+							}
+							if (form.children().eq(next)[0]==select_box.parent('div.select-wrapper')[0]){
+								dropbox.click();
+								dropbox.focus();
+								dropbox.on('close.focus',function(){
+									form.children().eq(next+1).focus();
+									$(this).off('close.focus');
+								});
+								if(cur.length == 0){
+									list.children().first().addClass("active selected");
+								}else{
+									cur.addClass("active selected");
+								}
+							}
+							form.children().eq(next).focus();
+							return;
+						}
+						return;
+					}
+				}
+			</script>
+
+			<!--Active Code & Events-->
+			<script type="text/javascript">
+				//keystroke handler
+				window.addEventListener("keydown", onKeystroke, false);
+				
+				//Deprecated, Form modal file input handler
+				$('#file_input').change(function() { readQRCode(); });
+				
+				//registers clicks on tables
+				$('table').find('.tr-signed-in').click(on_row_click);
+				
+				//handler for when showed-signed-out checkbox is changed, now shows and hide also for search without modifying search results
+				$('#show-signed-out').change(function() {
+					if (this.checked) {
+						Materialize.toast('Opening...',dur_short_msg,'toast');
+						Cookies.set('show-signed-out', 'true');
+					} else {
+						//$('.tr-signed-out').hide();
+						Materialize.toast('Closing...',dur_short_msg,'toast');
+						Cookies.set('show-signed-out', 'false');
+					}
+					
+					//if there are uncleared search results
+					if($('table tbody tr.result').length > 0){
+						//hides and shows only within search results
+						if (this.checked) {
+							$('table tbody tr.tr-signed-out.result').removeClass("hidden");
+						}else{
+							$('table tbody tr.tr-signed-out.result').addClass("hidden");
+						}
+						table_resize(true);
+					}else{
+						reset_table();
+					}
+				});
+				
+				//handler to instant resize table when window is resized
+				$(window).resize(function(){
+					table_resize(false);
+				});
+				
+				//initialization handler
+				$(function() {
+					$('td:nth-child(1), th:nth-child(1)').hide(); //hides the UUID
+					if (Cookies.get('show-signed-out') == '')
+						{Cookies.set('show-signed-out', 'false');
+					}
+					reset_table(false);//can initialize table using this as well
+					$('#show-signed-out').prop('checked',(Cookies.get('show-signed-out') == 'true'));
+					
+					//bakes modals (and attach handlers)
+					$('#modal1').modal({
+						ready: function(){
+							is_modal1_open = true;
+							$('form:first *:input[type!=hidden]:first').focus(); //autofocus onto first blank of form
+						},
+						complete: function(){is_modal1_open=false;}
+					});
+					$('#modal2').modal({
+						ready:function(){is_modal2_open = true;},
+						complete:function(){ //clears the video thread (still have no idea why it lags until QRcode is successful, even when with OCR)
+							var vid = $("#cstream")[0];
+							clearInterval(capture_thread_for_webcam);
+							is_identifying = false;
+							is_modal2_open = false;
+							Materialize.Toast.removeAll();
+							Tesseract.terminate();
+							//vid.srcObject.getTracks()[0].stop();
+							vid.pause();
+						}
+					});
+					$('#search')[0].value = Cookies.get('search-request');
+					table_search();
+					$("select").material_select(); //bakes selectbox (i hate materialize)
+					$("select[required]").css({position: 'absolute', display: 'inline', height: 0, padding: 0, width: 0});
+				});
+			</script>
+		</div>
+	</body>
+</html>

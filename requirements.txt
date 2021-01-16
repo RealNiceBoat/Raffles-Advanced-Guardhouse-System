@@ -1,0 +1,4 @@
+pysqlite3
+flask
+flask-sqlalchemy
+sqlalchemy-utils

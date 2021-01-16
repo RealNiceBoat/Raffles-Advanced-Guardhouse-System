@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+
+<html type="text/html">
+	<head>
+		<!--Meta-->
+		<meta charset="utf-8"/>
+		<meta lang = "en"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>RI Visit Registration</title>
+		
+		<!--Stylesheets-->
+		<link rel="stylesheet" href="css/bootstrap.min.css" type="text/css"><!--Bootstrap 4 style-->
+		<link rel="stylesheet" href="css/style.css" type="text/css"><!--Page style-->
+		<link href='https://fonts.googleapis.com/css?family=Graduate|Titillium+Web' rel='stylesheet' type='text/css'><!--Google Web-fonts-->
+		
+		<!--Icon (generated using https://realfavicongenerator.net/)-->
+		<link rel="apple-touch-icon" sizes="180x180" href="ico/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="ico/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
+		<link rel="manifest" href="ico/site.webmanifest">
+		<link rel="mask-icon" href="ico/safari-pinned-tab.svg" color="#ffc40d">
+		<link rel="shortcut icon" href="ico/favicon.ico">
+		<meta name="apple-mobile-web-app-title" content="RI Visit Registration">
+		<meta name="application-name" content="RI Visit Registration">
+		<meta name="msapplication-TileColor" content="#ffc40d">
+		<meta name="msapplication-config" content="ico/browserconfig.xml">
+		<meta name="theme-color" content="#ffc40d">
+		
+		<!--Script Dependencies-->
+		<script src="js/jquery-3.2.1.slim.min.js" type="text/js"><!--Bootstrap 4 bundled jquery--></script>
+		<script src="js/popper.min.js" type="text/js"><!--Bootstrap 4 bundled popper--></script>
+		<script src="js/bootstrap.min.js" type="text/js"><!--Bootstrap 4--></script>
+		<script src="js/qrcode.js" type="text/javascript"><!--Credit to https://www.npmjs.com/package/qrcode-generator--></script>
+		<script src="js/code.js" type="text/javascript"><!--Page functionality--></script>
+		<script src="js/bg2.js" type="text/javascript"><!--Generates the best background ever, I put my heart and soul into this--></script>
+	</head>
+	
+	<body>
+		<!--noscript Page-->
+		<div>
+			<noscript>
+				<div class="dim"></div>
+				<div class="dialog_wrapper">
+					<div class="dialog">Please enable Javascript you luddite.</div>
+				</div>
+			</noscript>
+		</div>
+		
+		<!--Dimback-->
+		<div id="bg" class="dimback">
+		</div>
+		
+		<!--workaround-->
+		<div id="pg0" class="container">
+			<p>Starting... If you see this for more than a second update your browser.</p>
+		</div>
+		<!--main icon-->
+		<div class="container"><div class="mx-auto" id="icon" style="padding-top:1%;display:none;opacity:0;"><div class="w-25 mx-auto"><img src="img/Raffles_Institution_Coat_of_Arms.png" width="513" height="768" class="img-fluid"></div></div></div>
+		
+		<!--Page 1 (Form)-->
+		<div id="pg1" class="container">			
+			<!--Submission Form-->
+			<form class="mx-auto my-2 p-2">
+				<h1>RI Visit Registration</h1>
+				<input type="search" class="form-control form-control-lg my-2" placeholder="Full Name" id="name" name="name" maxlength="64" autocomplete="on">
+				<input type="search" class="form-control form-control-lg my-2" placeholder="NRIC" id="nric" name="nric" maxlength="9" autocomplete="on">
+				<input type="tel" class="form-control form-control-lg my-2" placeholder="Phone Number" id="telno" name="telno" maxlength="8" autocomplete="on">
+				<input type="email" class="form-control form-control-lg my-2" placeholder="Email" id="email" name="email" maxlength="64" autocomplete="on">
+				<select class="form-control form-control-lg my-2" id="reason" name = "reason_selector" onchange="is_secondary_reason()" value="">
+					<option value="" disabled selected>Reason for Visit</option>
+					<option value="Event">Attending Event</option>
+					<option value="Meeting">Meeting with Staff</option>
+					<option value="Visit">Going for Nostalgia Trip</option>
+					<option value="Ext">External Vendors</option>
+					<option value="Delivery">Item Delivery</option>
+					<option value="Other">Others</option>
+				</select>
+				<input type="search" class="form-control form-control-lg mb-2 mt-0" style="display:none;" placeholder="" id="other" name="reason" maxlength="100" value="none">
+				<div class="checkbox form-control-lg">
+					<label style="color:white;">
+						<input type="checkbox" class="form-control-lg" id="req1"> 
+						I agree to the <a onclick="show_terms_page();" href="javascript:void(0);">terms & conditions</a>.
+					</label>
+				</div>
+				<div class="checkbox form-control-lg">
+					<label style="color:white;">
+						<input type="checkbox" class="form-control-lg" id="req2"> 
+						I agree not to harm RI by bringing in disease, weapons or ill-intent.
+					</label>
+				</div>
+				<input type="button" class="btn btn-lg btn-primary btn-block w-50 mx-auto my-2 form-control-lg" value="Submit" onclick="submit_form()">
+				<a href="http://www.ri.edu.sg" style="font-size:150%;"> Return to main RI site...</a>
+			</form>
+		</div>
+		
+		<!--Page 2 (QR)-->
+		<div id="pg2" class="container text-center">
+			<div class="p-2 m-2">
+				<h1>Keep this Handy!</h1>
+				<a id="qrdwn" download="ri_visit_qrcode.png" style="font-size:150%;">Download the QR Code</a>
+			</div>
+			<div id="qrcontainer"></div>
+		</div>
+		
+		<!--Page 3 (T&C)-->
+		<div id="pg3" class="container">
+			<div class="mx-auto my-2 p-3">
+				<h1>Terms & Conditions</h1>
+				<input type="button" class="btn btn-lg btn-primary mw-10 form-control-lg my-2 ml-0" value="Back" onclick="return_to_main();">
+				<br><a id="tcdwn" style="font-size:150%;" download="ri_visit_registration_terms_and_conditions.txt">Download the Terms & Conditions</a>
+				<div id="terms"></div>
+				<input type="button" class="btn btn-lg btn-primary mw-10 form-control-lg my-2 ml-0" value="Back" onclick="return_to_main();">
+			</div>
+		</div>
+		
+		<!--initializer-->
+		<script>
+			setTimeout(toggle_icon,333);
+			page_change('pg1');
+		</script>
+	</body>
+</html>
